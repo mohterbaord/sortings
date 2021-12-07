@@ -9,6 +9,7 @@
 typedef char* CharSequence;
 
 typedef int (*CompareInts)(int left, int right);
+typedef void (*SortIntArray)(IntArray* self);
 typedef int (*MapInt)(int value);
 typedef bool (*FilterInt)(int value);
 typedef int (*FoldInts)(int left, int right);
@@ -20,6 +21,8 @@ typedef struct IntArrayApi {
     CompareInts _compare_ints;
 
     bool _compare_reversed;
+
+    SortIntArray _sort_int_array;
 
     IntArray* (*init)();
 
