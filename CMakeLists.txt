@@ -13,4 +13,7 @@ include_directories(src/main/c)
 # targets
 set(TARGET_MAIN src/main/c/main.c)
 
-add_executable(main ${TARGET_MAIN})
+# sources
+aux_source_directory(src/main/c/collections/int_array COLLECTIONS_INT_ARRAY)
+
+add_executable(main ${COLLECTIONS} ${COLLECTIONS_INT_ARRAY} ${TARGET_MAIN})
