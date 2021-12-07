@@ -11,16 +11,29 @@ int main() {
 
     CharSequence arr_str = int_array_api()->str(arr);
     printf("\nOriginal array:\n  %s\n", arr_str);
+    free(arr_str);
+
+    //
 
     IntArray* arr_sorted = int_array_api()->sorted(arr);
+
     CharSequence arr_sorted_str = int_array_api()->str(arr_sorted);
     printf("\nSorted array:\n  %s\n", arr_sorted_str);
+    free(arr_sorted_str);
+
+    //
+
+    IntArray* arr_sorted_reversed = int_array_api()->reversed(arr_sorted);
+
+    CharSequence arr_sorted_reversed_str = int_array_api()->str(arr_sorted_reversed);
+    printf("\nReversed sorted array:\n  %s\n", arr_sorted_reversed_str);
+    free(arr_sorted_reversed_str);
+
+    //
 
     int_array_api()->del(arr);
     int_array_api()->del(arr_sorted);
-
-    free(arr_str);
-    free(arr_sorted_str);
+    int_array_api()->del(arr_sorted_reversed);
 
     return 0;
 }

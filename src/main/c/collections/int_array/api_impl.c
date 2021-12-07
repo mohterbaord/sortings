@@ -192,8 +192,10 @@ static IntArray* copied(IntArray* self) {
 
 static IntArray* reversed(IntArray* self) {
     IntArray* result = copied(self);
-    for (int i = 0; i < (result->_size / 2); ++i) {
-        _swap(self, i, self->_size - 1 - i);
+    int half_size = result->_size / 2;
+    int last_elem_index = result->_size - 1;
+    for (int i = 0; i < half_size; ++i) {
+        _swap(result, i, last_elem_index - i);
     }
     return result;
 }
@@ -289,6 +291,7 @@ IntArrayApi* int_array_api() {
         instance.sort = sort;
         instance.fold = fold;
         instance.copied = copied;
+        instance.reversed = reversed;
         instance.merged = merged;
         instance.mapped = mapped;
         instance.sorted = sorted;
