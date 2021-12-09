@@ -5,13 +5,13 @@
 
 #include "collections/int_array/api.h"
 #include "collections/int_array/data.h"
+#include "collections/int_array/sortings/sortings.h"
+#include "macro/qualifiers.h"
 
 #define DEFAULT_SIZE 0
 #define MIN_CAPACITY 64
 #define DEFAULT_CAPACITY MIN_CAPACITY
 #define CAPACITY_INCREASE_FACTOR 1.5
-
-#define __pure__
 
 struct __CharSequenceAndLength {
     const CharSequence char_sequence;
@@ -151,38 +151,6 @@ static void append_all_from(IntArray* self, IntArray* other) {
     append_all(self, other->_elems, other->_size);
 }
 
-__pure__ static int _compare(int left, int right) {
-    IntArrayApi* api = int_array_api();
-    int result = api->_compare_ints(left, right);
-    return !api->_compare_reversed ? result : -result; 
-}
-
-__pure__ static bool _should_swap(IntArray* self, int left_index, int right_index) {
-    return _compare(self->_elems[left_index], self->_elems[right_index]) > 0;
-}
-
-static bool _raise_bubble(IntArray* self, int left_elem_in_pair_last_index) {
-    bool bubble_raised = false;
-    for (
-        int left_index = 0, right_index = 1;
-        left_index < left_elem_in_pair_last_index;
-        ++left_index, ++right_index
-    ) {
-        bubble_raised |= (
-            _should_swap(self, left_index, right_index) &&
-            (_swap(self, left_index, right_index), true)
-        );
-    }
-    return bubble_raised;
-}
-
-static void _bubble_sort(IntArray* self) {
-    for (
-        int left_elem_in_pair_last_index = self->_size - 1;
-        (left_elem_in_pair_last_index > 0) && _raise_bubble(self, left_elem_in_pair_last_index--);
-    );
-}
-
 static void sort(IntArray* self) {
     int_array_api()->_sort_int_array(self);
 }
@@ -309,7 +277,8 @@ IntArrayApi* int_array_api() {
         instance.filtered = filtered;
         instance._compare_ints = _compare_ints;
         instance._compare_reversed = false;
-        instance._sort_int_array = _bubble_sort;
+        instance._sort_int_array = int_array_sortings()->BUBBLE_SORT;
+        instance._swap = _swap;
         instance._is_initialized = true;
     }
     return &instance;
@@ -319,4 +288,3 @@ IntArrayApi* int_array_api() {
 #undef MIN_CAPACITY
 #undef DEFAULT_CAPACITY
 #undef CAPACITY_INCREASE_FACTOR
-#undef __pure__

@@ -52,6 +52,8 @@ typedef struct IntArrayApi {
 
     IntArray* (*filtered)(IntArray* self, FilterInt filter);
 
+    void (*_swap)(IntArray* self, int i, int j);
+
 } IntArrayApi;
 
 IntArrayApi* int_array_api();
