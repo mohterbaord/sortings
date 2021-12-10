@@ -8,26 +8,12 @@
 #include "collections/int_array/sortings/sortings.h"
 #include "macro/qualifiers.h"
 
+#include "collections/int_array/__str_impl.h"
+
 #define DEFAULT_SIZE 0
 #define MIN_CAPACITY 64
 #define DEFAULT_CAPACITY MIN_CAPACITY
 #define CAPACITY_INCREASE_FACTOR 1.5
-
-struct __CharSequenceAndLength {
-    const CharSequence char_sequence;
-    const int length;
-};
-
-struct __IntArrayStrFormat {
-    const struct __CharSequenceAndLength typename;
-    const struct __CharSequenceAndLength separator_1;
-    const struct __CharSequenceAndLength separator_2;
-    const struct __CharSequenceAndLength separator_3;
-    IntArray* _int_array;
-    int _size_length;
-    IntArray* _lengths;
-    int _result_str_length;
-};
 
 __pure__ static int fold(IntArray* self, int start_value, FoldInts fold);
 static void append(IntArray* self, int value);
@@ -36,11 +22,12 @@ __pure__ static IntArray _construct(int* elems, size_t size, size_t capacity);
 __pure__ static IntArray _prepare_new_data(IntArray* self, size_t new_capacity);
 __pure__ static size_t _limit_capacity(size_t capacity);
 __pure__ static size_t _limit_size_with_capacity(size_t size, size_t capacity);
-__pure__ static int _compare(int left, int right);
 __pure__ static int _compare_ints(int left, int right);
+__pure__ static bool __should_swap(IntArray* self, int left_index, int right_index);
+__pure__ static int __compare(int left, int right);
 static void _set_fields_from(IntArray* self, IntArray data);
 static void _realloc_elems(IntArray* self, size_t new_capacity);
-static void _swap(IntArray* self, int i, int j);
+static void __swap(IntArray* self, int i, int j);
 
 __pure__ static IntArray* init() {
     IntArray* int_array = malloc(sizeof(IntArray));
@@ -51,86 +38,6 @@ __pure__ static IntArray* init() {
 static void del(IntArray* self) {
     free(self->_elems);
     free(self);
-}
-
-__pure__ static int _sum(int i1, int i2) {
-    return i1 + i2;
-}
-
-static void _strcat_ulong(CharSequence dst, unsigned long value, int value_lenght) {
-    CharSequence tmp = calloc(value_lenght + 1, sizeof(char));
-    snprintf(tmp, value_lenght + 1, "%zu", value);
-    strncat(dst, tmp, value_lenght + 1);
-    free(tmp);
-}
-
-static void _strcat_int(CharSequence dst, int value, int value_length, struct __CharSequenceAndLength postfix) {
-    int postfixed_value_length = value_length + postfix.length;
-    CharSequence tmp = calloc(postfixed_value_length + 1, sizeof(char));
-    snprintf(tmp, postfixed_value_length + 1, "%d%s", value, postfix.char_sequence);
-    strncat(dst, tmp, postfixed_value_length + 1);
-    free(tmp);
-}
-
-__pure__ static int _count_result_str_length(struct __IntArrayStrFormat format) {
-    return format.typename.length +
-        format._size_length +
-        format.separator_1.length +
-        fold(format._lengths, 0, &_sum) +
-        (format.separator_2.length * (format._int_array->_size - 1)) +
-        format.separator_3.length;
-}
-
-__pure__ static struct __CharSequenceAndLength _init_char_sequence_and_length(const CharSequence char_sequence) {
-    struct __CharSequenceAndLength char_sequence_and_length = {
-        .char_sequence=char_sequence,
-        .length=strlen(char_sequence),
-    };
-    return char_sequence_and_length;
-}
-
-static void _setup_format(struct __IntArrayStrFormat* format, IntArray* int_array) {
-    format->_int_array = int_array;
-    format->_size_length = snprintf(NULL, 0, "%zu", format->_int_array->_size);
-    IntArray* lengths = init();
-    for (int i = 0; i < format->_int_array->_size; ++i) {
-        append(lengths, snprintf(NULL, 0, "%d", format->_int_array->_elems[i]));
-    }
-    format->_lengths = lengths;
-    format->_result_str_length = _count_result_str_length(*format);
-}
-
-__pure__ static struct __IntArrayStrFormat _prepare_format(IntArray* int_array) {
-    struct __IntArrayStrFormat format = {
-        .typename=_init_char_sequence_and_length("IntArray["),
-        .separator_1=_init_char_sequence_and_length("]{ "),
-        .separator_2=_init_char_sequence_and_length(", "),
-        .separator_3=_init_char_sequence_and_length(" }"),
-    };
-    _setup_format(&format, int_array);
-    return format;
-}
-
-static void _write_elems_in_result_str(CharSequence result_str, struct __IntArrayStrFormat format) {
-    int i = 0;
-    for (; i < (format._int_array->_size - 1); ++i) {
-        _strcat_int(result_str, format._int_array->_elems[i], format._lengths->_elems[i], format.separator_2);
-    }
-    _strcat_int(result_str, format._int_array->_elems[i], format._lengths->_elems[i], format.separator_3);
-}
-
-__pure__ static CharSequence _concat_result_str_and_free_format(struct __IntArrayStrFormat format) {
-    CharSequence result = calloc(format._result_str_length + 1, sizeof(char));
-    strncat(result, format.typename.char_sequence, format.typename.length + 1);
-    _strcat_ulong(result, format._int_array->_size, format._size_length);
-    strncat(result, format.separator_1.char_sequence, format.separator_1.length + 1);
-    _write_elems_in_result_str(result, format);
-    free(format._lengths);
-    return result;
-}
-
-__pure__ static CharSequence str(IntArray* self) {
-    return _concat_result_str_and_free_format(_prepare_format(self));
 }
 
 static void append(IntArray* self, int value) {
@@ -176,7 +83,7 @@ __pure__ static IntArray* reversed(IntArray* self) {
     int half_size = result->_size / 2;
     int last_elem_index = result->_size - 1;
     for (int i = 0; i < half_size; ++i) {
-        _swap(result, i, last_elem_index - i);
+        __swap(result, i, last_elem_index - i);
     }
     return result;
 }
@@ -199,12 +106,6 @@ __pure__ static IntArray* sorted(IntArray* self) {
     IntArray* result = copied(self);
     sort(result);
     return result;
-}
-
-static void _swap(IntArray* self, int i, int j) {
-    int tmp = self->_elems[i];
-    self->_elems[i] = self->_elems[j];
-    self->_elems[j] = tmp;
 }
 
 __pure__ static IntArray* filtered(IntArray* self, FilterInt filter) {
@@ -256,17 +157,27 @@ __pure__ static IntArray _construct(int* elems, size_t size, size_t capacity) {
     return int_array;
 }
 
-__pure__ static bool _should_swap(IntArray* self, int left_index, int right_index) {
-    return _compare(self->_elems[left_index], self->_elems[right_index]) > 0;
-}
-
-__pure__ static int _compare(int left, int right) {
-    int result = _compare_ints(left, right);
-    return !int_array_api()->_compare_reversed ? result : -result; 
-}
-
 __pure__ static int _compare_ints(int left, int right) {
     return (left < right) ? -1 : ((left > right) ? 1 : 0);
+}
+
+static bool __decide_swap(IntArray* self, int left_index, int right_index) {
+    return __should_swap(self, left_index, right_index) && (__swap(self, left_index, right_index), true);
+}
+
+__pure__ static bool __should_swap(IntArray* self, int left_index, int right_index) {
+    return __compare(self->_elems[left_index], self->_elems[right_index]) > 0;
+}
+
+__pure__ static int __compare(int left, int right) {
+    int result = _compare_ints(left, right);
+    return !int_array_api()->_compare_reversed ? result : -result;
+}
+
+static void __swap(IntArray* self, int i, int j) {
+    int tmp = self->_elems[i];
+    self->_elems[i] = self->_elems[j];
+    self->_elems[j] = tmp;
 }
 
 IntArrayApi* int_array_api() {
@@ -288,9 +199,8 @@ IntArrayApi* int_array_api() {
         instance.filtered = filtered;
         instance._compare_ints = _compare_ints;
         instance._compare_reversed = false;
-        instance._sort_int_array = int_array_sortings()->SHAKER_SORT;
-        instance._swap = _swap;
-        instance._should_swap = _should_swap;
+        instance._sort_int_array = int_array_sortings()->COMB_SORT;
+        instance.__decide_swap = __decide_swap;
         instance._is_initialized = true;
     }
     return &instance;

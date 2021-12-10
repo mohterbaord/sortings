@@ -21,10 +21,7 @@ static bool _raise_bubble(IntArray* self, int left_elem_in_pair_last_index) {
         left_index < left_elem_in_pair_last_index;
         ++left_index, ++right_index
     ) {
-        bubble_raised |= (
-            int_array_api()->_should_swap(self, left_index, right_index) &&
-            (int_array_api()->_swap(self, left_index, right_index), true)
-        );
+        bubble_raised |= int_array_api()->__decide_swap(self, left_index, right_index);
     }
     return bubble_raised;
 }
