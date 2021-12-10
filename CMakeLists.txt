@@ -15,5 +15,6 @@ set(TARGET_MAIN src/main/c/main.c)
 
 # sources
 aux_source_directory(src/main/c/collections/int_array COLLECTIONS_INT_ARRAY)
+aux_source_directory(src/main/c/collections/int_array/sortings COLLECTIONS_INT_ARRAY_SORTINGS)
 
-add_executable(main ${COLLECTIONS} ${COLLECTIONS_INT_ARRAY} ${TARGET_MAIN})
+add_executable(main ${COLLECTIONS} ${COLLECTIONS_INT_ARRAY} ${COLLECTIONS_INT_ARRAY_SORTINGS} ${TARGET_MAIN})
