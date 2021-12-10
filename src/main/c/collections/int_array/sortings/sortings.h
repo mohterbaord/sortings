@@ -9,6 +9,8 @@ typedef struct IntArraySortings {
 
     const SortIntArray SHAKER_SORT;
 
+    const SortIntArray COMB_SORT;
+
 } IntArraySortings;
 
 IntArraySortings* int_array_sortings();

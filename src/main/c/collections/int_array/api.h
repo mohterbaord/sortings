@@ -52,9 +52,7 @@ typedef struct IntArrayApi {
 
     IntArray* (*filtered)(IntArray* self, FilterInt filter);
 
-    void (*_swap)(IntArray* self, int i, int j);
-
-    bool (*_should_swap)(IntArray* self, int left_index, int right_index);
+    bool (*__decide_swap)(IntArray* self, int left_index, int right_index);
 
 } IntArrayApi;
 

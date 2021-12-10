@@ -61,23 +61,16 @@ static bool _shake_with_swaps_folding(struct __ShakerIterator shaker) {
 
 static bool _shake_right_with_swaps_folding(struct __ShakerIterator shaker) {
     bool swapped = false;
-    for (int i = shaker._right_elems_in_pair; i < shaker._left_elems_in_pair; i++) {
-        swapped |= _decide_swap(shaker._int_array, i, i + 1);
+    for (int i = shaker._right_elems_in_pair; i < shaker._left_elems_in_pair; ++i) {
+        swapped |= int_array_api()->__decide_swap(shaker._int_array, i, i + 1);
     }
     return swapped;
 }
 
 static bool _shake_left_with_swaps_folding(struct __ShakerIterator shaker) {
     bool swapped = false;
-    for (int i = shaker._left_elems_in_pair; i > shaker._right_elems_in_pair; i--) {
-        swapped |= _decide_swap(shaker._int_array, i - 1, i);
+    for (int i = shaker._left_elems_in_pair; i > shaker._right_elems_in_pair; --i) {
+        swapped |= int_array_api()->__decide_swap(shaker._int_array, i - 1, i);
     }
     return swapped;
-}
-
-static bool _decide_swap(IntArray* int_array, int left_index, int right_index) {
-    return (
-        int_array_api()->_should_swap(int_array, left_index, right_index) &&
-        (int_array_api()->_swap(int_array, left_index, right_index), true)
-    );
 }
