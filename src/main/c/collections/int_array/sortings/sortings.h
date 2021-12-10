@@ -11,6 +11,8 @@ typedef struct IntArraySortings {
 
     const SortIntArray COMB_SORT;
 
+    const SortIntArray INSERTION_SORT;
+
 } IntArraySortings;
 
 IntArraySortings* int_array_sortings();

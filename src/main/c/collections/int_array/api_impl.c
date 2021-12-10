@@ -199,7 +199,7 @@ IntArrayApi* int_array_api() {
         instance.filtered = filtered;
         instance._compare_ints = _compare_ints;
         instance._compare_reversed = false;
-        instance._sort_int_array = int_array_sortings()->COMB_SORT;
+        instance._sort_int_array = int_array_sortings()->INSERTION_SORT;
         instance.__decide_swap = __decide_swap;
         instance._is_initialized = true;
     }
