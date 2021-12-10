@@ -7,6 +7,8 @@ typedef struct IntArraySortings {
 
     const SortIntArray BUBBLE_SORT;
 
+    const SortIntArray SHAKER_SORT;
+
 } IntArraySortings;
 
 IntArraySortings* int_array_sortings();

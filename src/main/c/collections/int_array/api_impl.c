@@ -36,6 +36,8 @@ __pure__ static IntArray _construct(int* elems, size_t size, size_t capacity);
 __pure__ static IntArray _prepare_new_data(IntArray* self, size_t new_capacity);
 __pure__ static size_t _limit_capacity(size_t capacity);
 __pure__ static size_t _limit_size_with_capacity(size_t size, size_t capacity);
+__pure__ static int _compare(int left, int right);
+__pure__ static int _compare_ints(int left, int right);
 static void _set_fields_from(IntArray* self, IntArray data);
 static void _realloc_elems(IntArray* self, size_t new_capacity);
 static void _swap(IntArray* self, int i, int j);
@@ -254,6 +256,15 @@ __pure__ static IntArray _construct(int* elems, size_t size, size_t capacity) {
     return int_array;
 }
 
+__pure__ static bool _should_swap(IntArray* self, int left_index, int right_index) {
+    return _compare(self->_elems[left_index], self->_elems[right_index]) > 0;
+}
+
+__pure__ static int _compare(int left, int right) {
+    int result = _compare_ints(left, right);
+    return !int_array_api()->_compare_reversed ? result : -result; 
+}
+
 __pure__ static int _compare_ints(int left, int right) {
     return (left < right) ? -1 : ((left > right) ? 1 : 0);
 }
@@ -277,8 +288,9 @@ IntArrayApi* int_array_api() {
         instance.filtered = filtered;
         instance._compare_ints = _compare_ints;
         instance._compare_reversed = false;
-        instance._sort_int_array = int_array_sortings()->BUBBLE_SORT;
+        instance._sort_int_array = int_array_sortings()->SHAKER_SORT;
         instance._swap = _swap;
+        instance._should_swap = _should_swap;
         instance._is_initialized = true;
     }
     return &instance;

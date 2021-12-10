@@ -54,6 +54,8 @@ typedef struct IntArrayApi {
 
     void (*_swap)(IntArray* self, int i, int j);
 
+    bool (*_should_swap)(IntArray* self, int left_index, int right_index);
+
 } IntArrayApi;
 
 IntArrayApi* int_array_api();
