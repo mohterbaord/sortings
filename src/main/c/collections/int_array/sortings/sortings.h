@@ -13,6 +13,8 @@ typedef struct IntArraySortings {
 
     const SortIntArray INSERTION_SORT;
 
+    const SortIntArray SHELL_SORT;
+
 } IntArraySortings;
 
 IntArraySortings* int_array_sortings();

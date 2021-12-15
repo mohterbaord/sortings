@@ -6,6 +6,7 @@
 #include "collections/int_array/sortings/__comb_sort_impl.h"
 #include "collections/int_array/sortings/__insertion_sort_impl.h"
 #include "collections/int_array/sortings/__shaker_sort_impl.h"
+#include "collections/int_array/sortings/__shell_sort_impl.h"
 
 IntArraySortings* int_array_sortings() {
     static IntArraySortings sortings = {
@@ -13,6 +14,7 @@ IntArraySortings* int_array_sortings() {
         .SHAKER_SORT=shaker_sort,
         .COMB_SORT=comb_sort,
         .INSERTION_SORT=insertion_sort,
+        .SHELL_SORT=shell_sort,
     };
     return &sortings;
 }
