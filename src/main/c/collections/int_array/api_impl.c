@@ -17,21 +17,32 @@
 
 __pure__ static int fold(IntArray* self, int start_value, FoldInts fold);
 static void append(IntArray* self, int value);
+static void append_all(IntArray* self, int values[], size_t n);
 
-__pure__ static IntArray _construct(int* elems, size_t size, size_t capacity);
-__pure__ static IntArray _prepare_new_data(IntArray* self, size_t new_capacity);
-__pure__ static size_t _limit_capacity(size_t capacity);
-__pure__ static size_t _limit_size_with_capacity(size_t size, size_t capacity);
-__pure__ static int _compare_ints(int left, int right);
+__pure__ static IntArray __construct(int* elems, size_t size, size_t capacity);
+__pure__ static IntArray __prepare_new_data(IntArray* self, size_t new_capacity);
+__pure__ static size_t __limit_capacity(size_t capacity);
+__pure__ static size_t __limit_size_with_capacity(size_t size, size_t capacity);
+__pure__ static int __compare_ints(int left, int right);
 __pure__ static bool __should_swap(IntArray* self, int left_index, int right_index);
 __pure__ static int __compare(int left, int right);
-static void _set_fields_from(IntArray* self, IntArray data);
-static void _realloc_elems(IntArray* self, size_t new_capacity);
+static void __set_fields_from(IntArray* self, IntArray data);
+static void __realloc_elems(IntArray* self, size_t new_capacity);
 static void __swap(IntArray* self, int i, int j);
+
+//
 
 __pure__ static IntArray* init() {
     IntArray* int_array = malloc(sizeof(IntArray));
-    _set_fields_from(int_array, _construct(calloc(MIN_CAPACITY, sizeof(int)), DEFAULT_SIZE, DEFAULT_CAPACITY));
+    __set_fields_from(int_array, __construct(calloc(MIN_CAPACITY, sizeof(int)), DEFAULT_SIZE, DEFAULT_CAPACITY));
+    return int_array;
+}
+
+__pure__ static IntArray* init_from(int values[], size_t n) {
+    IntArray* int_array = malloc(sizeof(IntArray));
+    size_t capacity = __limit_capacity(n);
+    __set_fields_from(int_array, __construct(calloc(capacity, sizeof(int)), DEFAULT_SIZE, capacity));
+    append_all(int_array, values, n);
     return int_array;
 }
 
@@ -42,7 +53,7 @@ static void del(IntArray* self) {
 
 static void append(IntArray* self, int value) {
     if (self->_size == self->_capacity) {
-        _realloc_elems(self, (size_t) (CAPACITY_INCREASE_FACTOR * self->_capacity));
+        __realloc_elems(self, (size_t) (CAPACITY_INCREASE_FACTOR * self->_capacity));
     }
     self->_elems[self->_size++] = value;
 }
@@ -50,7 +61,7 @@ static void append(IntArray* self, int value) {
 static void append_all(IntArray* self, int values[], size_t n) {
     size_t new_size = self->_size + n;
     if (new_size >= self->_capacity) {
-        _realloc_elems(self, (size_t) (CAPACITY_INCREASE_FACTOR * new_size));
+        __realloc_elems(self, (size_t) (CAPACITY_INCREASE_FACTOR * new_size));
     }
     memcpy(self->_elems + self->_size, values, sizeof(int) * n);
     self->_size = new_size;
@@ -118,37 +129,37 @@ __pure__ static IntArray* filtered(IntArray* self, FilterInt filter) {
     return result;
 }
 
-static void _set_fields_from(IntArray* self, IntArray data) {
+static void __set_fields_from(IntArray* self, IntArray data) {
     self->_elems = data._elems;
     self->_size = data._size;
     self->_capacity = data._capacity;
 }
 
-static void _realloc_elems(IntArray* self, size_t new_capacity) {
-    IntArray new_data = _prepare_new_data(self, new_capacity);
+static void __realloc_elems(IntArray* self, size_t new_capacity) {
+    IntArray new_data = __prepare_new_data(self, new_capacity);
     memcpy(new_data._elems, self->_elems, sizeof(int) * new_data._size);
     free(self->_elems);
-    _set_fields_from(self, new_data);
+    __set_fields_from(self, new_data);
 }
 
-__pure__ static IntArray _prepare_new_data(IntArray* self, size_t new_capacity) {
-    size_t new_capacity_limited = _limit_capacity(new_capacity);
-    return _construct(
+__pure__ static IntArray __prepare_new_data(IntArray* self, size_t new_capacity) {
+    size_t new_capacity_limited = __limit_capacity(new_capacity);
+    return __construct(
         calloc(new_capacity_limited, sizeof(int)),
-        _limit_size_with_capacity(self->_size, new_capacity_limited),
+        __limit_size_with_capacity(self->_size, new_capacity_limited),
         new_capacity_limited
     );
 }
 
-__pure__ static size_t _limit_capacity(size_t capacity) {
+__pure__ static size_t __limit_capacity(size_t capacity) {
     return (capacity < MIN_CAPACITY) ? MIN_CAPACITY : capacity;
 }
 
-__pure__ static size_t _limit_size_with_capacity(size_t size, size_t capacity) {
+__pure__ static size_t __limit_size_with_capacity(size_t size, size_t capacity) {
     return (capacity < size) ? capacity : size;
 }
 
-__pure__ static IntArray _construct(int* elems, size_t size, size_t capacity) {
+__pure__ static IntArray __construct(int* elems, size_t size, size_t capacity) {
     IntArray int_array = {
         ._elems=elems,
         ._size=size,
@@ -157,7 +168,7 @@ __pure__ static IntArray _construct(int* elems, size_t size, size_t capacity) {
     return int_array;
 }
 
-__pure__ static int _compare_ints(int left, int right) {
+__pure__ static int __compare_ints(int left, int right) {
     return (left < right) ? -1 : ((left > right) ? 1 : 0);
 }
 
@@ -170,7 +181,7 @@ __pure__ static bool __should_swap(IntArray* self, int left_index, int right_ind
 }
 
 __pure__ static int __compare(int left, int right) {
-    int result = _compare_ints(left, right);
+    int result = __compare_ints(left, right);
     return !int_array_api()->_compare_reversed ? result : -result;
 }
 
@@ -183,26 +194,30 @@ static void __swap(IntArray* self, int i, int j) {
 IntArrayApi* int_array_api() {
     static IntArrayApi instance = { ._is_initialized=false };
     if (!instance._is_initialized) {
-        instance.init = init;
-        instance.del = del;
-        instance.str = str;
-        instance.append = append;
-        instance.append_all = append_all;
-        instance.append_all_from = append_all_from;
-        instance.sort = sort;
-        instance.fold = fold;
-        instance.copied = copied;
-        instance.reversed = reversed;
-        instance.merged = merged;
-        instance.mapped = mapped;
-        instance.sorted = sorted;
-        instance.filtered = filtered;
-        instance._compare_ints = _compare_ints;
-        instance._compare_reversed = false;
-        instance._sort_int_array = int_array_sortings()->SHELL_SORT;
-        instance.__decide_swap = __decide_swap;
-        instance.__compare = __compare;
-        instance._is_initialized = true;
+        IntArrayApi new_instance = {
+            __export__(init),
+            __export__(init_from),
+            __export__(del),
+            __export__(str),
+            __export__(append),
+            __export__(append_all),
+            __export__(append_all_from),
+            __export__(sort),
+            __export__(fold),
+            __export__(copied),
+            __export__(reversed),
+            __export__(merged),
+            __export__(mapped),
+            __export__(sorted),
+            __export__(filtered),
+            __export__(__decide_swap),
+            __export__(__compare),
+            ._compare_ints=__compare_ints,
+            ._compare_reversed=false,
+            ._sort_int_array=int_array_sortings()->SHELL_SORT,
+            ._is_initialized=true,
+        };
+        instance = new_instance;
     }
     return &instance;
 }

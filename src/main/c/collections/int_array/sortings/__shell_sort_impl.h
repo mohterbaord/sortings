@@ -45,6 +45,8 @@ static void __run_shell_sort_for_gap(IntArray* self, int gap);
 static void __shift_last_elem(IntArray* self, int gap, int last_elem_index);
 static bool __should_insert_last_elem_before(int last_elem, int in_front_elem);
 
+//
+
 static void shell_sort(IntArray* self) {
     for (int gap = self->_size - 1; gap > 0; gap /= 2) {
         __run_shell_sort_for_gap(self, gap);
