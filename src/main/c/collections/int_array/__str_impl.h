@@ -6,38 +6,40 @@
 #include "collections/int_array/data.h"
 #include "macro/qualifiers.h"
 
-struct __CharSequenceAndLength {
+typedef struct CharSequenceAndLength {
     const CharSequence char_sequence;
     const int length;
-};
+} CharSequenceAndLength;
 
-struct __IntArrayStrFormat {
-    const struct __CharSequenceAndLength typename;
-    const struct __CharSequenceAndLength separator_1;
-    const struct __CharSequenceAndLength separator_2;
-    const struct __CharSequenceAndLength separator_3;
+typedef struct IntArrayStrFormat {
+    const CharSequenceAndLength typename;
+    const CharSequenceAndLength separator_1;
+    const CharSequenceAndLength separator_2;
+    const CharSequenceAndLength separator_3;
     IntArray* _int_array;
     int _size_length;
     IntArray* _lengths;
     int _result_str_length;
-};
+} IntArrayStrFormat;
 
-__pure__ static struct __IntArrayStrFormat __prepare_format(IntArray* int_array);
-__pure__ static struct __CharSequenceAndLength __init_char_sequence_and_length(const CharSequence char_sequence);
-static void __setup_format(struct __IntArrayStrFormat* format, IntArray* int_array);
-__pure__ static int __count_result_str_length(struct __IntArrayStrFormat format);
+__pure__ static IntArrayStrFormat __prepare_format(IntArray* int_array);
+__pure__ static CharSequenceAndLength __init_char_sequence_and_length(const CharSequence char_sequence);
+static void __setup_format(IntArrayStrFormat* format, IntArray* int_array);
+__pure__ static int __count_result_str_length(IntArrayStrFormat format);
 __pure__ static int __sum(int i1, int i2);
-static CharSequence __concat_result_str_and_free_format(struct __IntArrayStrFormat format);
+static CharSequence __concat_result_str_and_free_format(IntArrayStrFormat format);
 static void __strcat_ulong(CharSequence dst, unsigned long value, int value_lenght);
-static void __write_elems_in_result_str(CharSequence result_str, struct __IntArrayStrFormat format);
-static void __strcat_int(CharSequence dst, int value, int value_length, struct __CharSequenceAndLength postfix);
+static void __write_elems_in_result_str(CharSequence result_str, IntArrayStrFormat format);
+static void __strcat_int(CharSequence dst, int value, int value_length, CharSequenceAndLength postfix);
+
+//
 
 __pure__ static CharSequence str(IntArray* self) {
     return __concat_result_str_and_free_format(__prepare_format(self));
 }
 
-__pure__ static struct __IntArrayStrFormat __prepare_format(IntArray* int_array) {
-    struct __IntArrayStrFormat format = {
+__pure__ static IntArrayStrFormat __prepare_format(IntArray* int_array) {
+    IntArrayStrFormat format = {
         .typename=__init_char_sequence_and_length("IntArray["),
         .separator_1=__init_char_sequence_and_length("]{ "),
         .separator_2=__init_char_sequence_and_length(", "),
@@ -47,15 +49,15 @@ __pure__ static struct __IntArrayStrFormat __prepare_format(IntArray* int_array)
     return format;
 }
 
-__pure__ static struct __CharSequenceAndLength __init_char_sequence_and_length(const CharSequence char_sequence) {
-    struct __CharSequenceAndLength char_sequence_and_length = {
+__pure__ static CharSequenceAndLength __init_char_sequence_and_length(const CharSequence char_sequence) {
+    CharSequenceAndLength char_sequence_and_length = {
         .char_sequence=char_sequence,
         .length=strlen(char_sequence),
     };
     return char_sequence_and_length;
 }
 
-static void __setup_format(struct __IntArrayStrFormat* format, IntArray* int_array) {
+static void __setup_format(IntArrayStrFormat* format, IntArray* int_array) {
     IntArrayApi* api = int_array_api();
     format->_int_array = int_array;
     format->_size_length = snprintf(NULL, 0, "%zu", format->_int_array->_size);
@@ -67,7 +69,7 @@ static void __setup_format(struct __IntArrayStrFormat* format, IntArray* int_arr
     format->_result_str_length = __count_result_str_length(*format);
 }
 
-__pure__ static int __count_result_str_length(struct __IntArrayStrFormat format) {
+__pure__ static int __count_result_str_length(IntArrayStrFormat format) {
     return format.typename.length +
         format._size_length +
         format.separator_1.length +
@@ -80,7 +82,7 @@ __pure__ static int __sum(int i1, int i2) {
     return i1 + i2;
 }
 
-static CharSequence __concat_result_str_and_free_format(struct __IntArrayStrFormat format) {
+static CharSequence __concat_result_str_and_free_format(IntArrayStrFormat format) {
     CharSequence result = calloc(format._result_str_length + 1, sizeof(char));
     strncat(result, format.typename.char_sequence, format.typename.length + 1);
     __strcat_ulong(result, format._int_array->_size, format._size_length);
@@ -97,7 +99,7 @@ static void __strcat_ulong(CharSequence dst, unsigned long value, int value_leng
     free(tmp);
 }
 
-static void __write_elems_in_result_str(CharSequence result_str, struct __IntArrayStrFormat format) {
+static void __write_elems_in_result_str(CharSequence result_str, IntArrayStrFormat format) {
     int last_elem_index = format._int_array->_size - 1;
     for (int i = 0; i < last_elem_index; ++i) {
         __strcat_int(result_str, format._int_array->_elems[i], format._lengths->_elems[i], format.separator_2);
@@ -110,7 +112,7 @@ static void __write_elems_in_result_str(CharSequence result_str, struct __IntArr
     );
 }
 
-static void __strcat_int(CharSequence dst, int value, int value_length, struct __CharSequenceAndLength postfix) {
+static void __strcat_int(CharSequence dst, int value, int value_length, CharSequenceAndLength postfix) {
     int postfixed_value_length = value_length + postfix.length;
     CharSequence tmp = calloc(postfixed_value_length + 1, sizeof(char));
     snprintf(tmp, postfixed_value_length + 1, "%d%s", value, postfix.char_sequence);

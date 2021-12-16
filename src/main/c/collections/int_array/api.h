@@ -26,6 +26,8 @@ typedef struct IntArrayApi {
 
     IntArray* (*init)();
 
+    IntArray* (*init_from)(int values[], size_t n);
+
     void (*del)(IntArray* self);
 
     CharSequence (*str)(IntArray* self);
